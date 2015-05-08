@@ -21,7 +21,7 @@ void quick_sort (int *a, int n) {
     quick_sort(a + i, n - i);
 }
 
-int run(int num){
+int run_s(int num){
 
     int a[num],i,n;
 
@@ -37,7 +37,7 @@ int run(int num){
 	return 0;
 }
 void help(){
-		printf("\nUsage: qs [OPTION]... [SIZE]...\nSort with quicksort algoritm a random array of SIZE, SIZE and OPTION are mandatory,SIZE must be a integer, OPTION must be [-s/-m], a default run displays this help and exit.\n\nMandatory arguments to long options are mandatory for short options too.\n\t-m, --multiproc       run with multiprocess support\n\t-s, --singleproc      run without multiprocess support\n\t\t--help     display this help and exit\n\t\t--version  output version information and exit\n\n");
+		printf("\nUsage: qs [OPTION]... [SIZE]...\nSort with quicksort algoritm a random array of SIZE, SIZE and OPTION are mandatory,SIZE must be a integer, OPTION must be [-s/-m], a default run displays this help and exit.\n\nMandatory arguments to long options are mandatory for short options too.\n\t-m       run with multiprocess support\n\t-s      run without multiprocess support\n\t\t-h     display this help and exit\n\t\t-v  output version information and exit\n\n");
 }
 
 void vers(){
@@ -46,20 +46,42 @@ printf("\nqs 1.00\nCopyright (C) 2014 Free Software Foundation, Inc.\nLicense GP
  
 int main (int argc, char *argv[]) {
 
-	int rtn,total;
+	int rtn,total,opt;
 	
 	switch(argc){
 		case 2:
-			vers();
-			rtn=0;
+			opt = getopt(argc, argv, "v");
+			if(opt == 'v')
+			{
+				vers();
+				rtn=0;
+			}
+			else 
+			{
+				help();
+				rtn=1;
+			}
 		break;
 		case 3:
-			total=atoi(argv[2]);
-			rtn=run(total);
+			opt = getopt(argc, argv, "s:m:");
+			if(opt == 's')
+			{
+				total=atoi(argv[2]);
+				rtn=run_s(total);
+			}
+			else if (opt == 'm')
+			{
+				printf("2do");
+			}
+			else
+			{
+				help();
+				rtn=1;
+			}	
 		break;
 		default:
 			help();
-			rtn=0;
+			rtn=1;
 		break;
 	}
 	return rtn;
