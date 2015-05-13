@@ -52,14 +52,34 @@ void quick_sort_m (int *a, int n) {
 
 void* quick_sort_m (void* parameters)
 {
-	struct arr_num* p = (struct arr_num*) parameters;
-	int i;
+	struct arr_num* arr = (struct arr_num*) parameters;
+	int i,j,p,t;
+	pthread_t thread;
 
-	printf("\n----------- sorted -----------\n");
-	for(i = 0;i < p->count; i++)
-		printf(" -- %d - %d --\n",i,p->array[i]);
+    if (arr->count < 2)
+		return NULL;
+	p=arr->array[arr->count/2];
+	for(i = 0,j=arr->count-1;; i++,j++)
+	{
+		while(arr->array[i]<p)
+			i++;
+		while (p<arr->array[j])
+			j--;
+        if (i >= j)
+            break;
+        t = arr->array[i];
+        arr->array[i] = arr->array[j];
+        arr->array[j] = t;
+	}
+
+    //quick_sort_m(arr);
+	pthread_create (&thread, NULL, &quick_sort_m,&arr);
+	pthread_join (thread, NULL);
+	arr->array=arr->array+i;
+	arr->count=arr->count-i;
+	pthread_create (&thread, NULL, &quick_sort_m,&arr);
+	pthread_join (thread, NULL);
 	
-	return NULL;
 }
 
 int run_s(int num){
@@ -93,6 +113,12 @@ int run_m(int num){
 	}
 	pthread_create (&thread, NULL, &quick_sort_m,&an);
 	pthread_join (thread, NULL);
+
+	printf("\n----------- sorted -----------\n");
+
+	for (j=0;j<an.count;j++)
+		printf(" -- %d - %d --\n",j,an.array[j]);
+
 	return 0;
 }
 
