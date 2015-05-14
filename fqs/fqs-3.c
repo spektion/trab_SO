@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+/*
 struct arr_num
 {
         int count;
         int *array;
 };
+*/
  
-void quick_sort (int *a, int n) {
+void quick_sort (long int *a,long int n) {
     int i, j, p, t;
     if (n < 2)
         return;
@@ -48,7 +50,6 @@ void quick_sort_m (int *a, int n) {
     quick_sort_m(a, i);
     quick_sort_m(a + i, n - i);
 }
-*/
 
 void* quick_sort_m (void* parameters)
 {
@@ -122,12 +123,42 @@ int run_m(int num){
 	return 0;
 }
 
+*/
+int run_s(char **fname){
+
+	int i;
+	long int num,size=0;
+    FILE *ptr_myfile;
+
+    ptr_myfile=fopen(*fname,"rb");
+    if (!ptr_myfile)
+    {
+		printf("Unable to open file!");
+        return 1;
+    }
+	while(fread(&num,sizeof(long int),1,ptr_myfile))
+		size++;
+	printf(" numero de registos %lu\n",size-1);
+	size--;
+	long int arr[size];
+	fseek(ptr_myfile, sizeof(long int), SEEK_SET );
+	for(i=0;i<size;i++)
+		fread(&arr[i],sizeof(long int),1,ptr_myfile);
+	fclose(ptr_myfile);
+	
+	printf("\n----------- sorted -----------\n");
+	quick_sort(arr, size);
+	for(i=0;i<size;i++)
+		printf("%d - %lu\n",i,arr[i]);
+	return 0;
+}
+
 void help(){
-		printf("\nUsage: qs [OPTION]... [SIZE]...\nSort with quicksort algoritm a random array of SIZE, SIZE and OPTION are mandatory,SIZE must be a integer, OPTION must be [-s/-m], a default run displays this help and exit.\n\nMandatory arguments to long options are mandatory for short options too.\n\t-m       run with multiprocess support\n\t-s      run without multiprocess support\n\t\t-h     display this help and exit\n\t\t-v  output version information and exit\n\n");
+		printf("\nUsage: fqs [OPTION]... [FILE]...\nSort with quicksort algoritm a file with random long ints, OPTION and FILE are mandatory, OPTION must be [-s/-m], a default run displays this help and exit.\n\nMandatory arguments to long options are mandatory for short options too.\n\t-m       run with multiprocess support\n\t-s      run without multiprocess support\n\t\t-h     display this help and exit\n\t\t-v  output version information and exit\n\n");
 }
 
 void vers(){
-printf("\nqs 1.02\nCopyright (C) 2014 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Gonçalo Faria, Luis Franco, and Vitor Filipe \n\n");
+printf("\nqs 1.03\nCopyright (C) 2014 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Gonçalo Faria, Luis Franco, and Vitor Filipe \n\n");
 }
  
 int main (int argc, char *argv[]) {
@@ -152,14 +183,12 @@ int main (int argc, char *argv[]) {
 			opt = getopt(argc, argv, "s:m:");
 			if(opt == 's')
 			{
-				total=atoi(argv[2]);
-				rtn=run_s(total);
+				rtn=run_s(&argv[2]);
 			}
 			else if (opt == 'm')
 			{
 				printf("2do\n");
-				total=atoi(argv[2]);
-				rtn=run_m(total);
+//				rtn=run_m(&argv[2]);
 			}
 			else
 			{
