@@ -122,9 +122,10 @@ int run_s(int num){
 	for (i = 0; i < n; i++)
 		printf("%d%s", a[i], i == n - 1 ? "\n" : " ");
 	printf("\n----------- sorted -----------\n");
-	quickSort(a,0, n);
-	for (i = 0; i < n; i++)
-		printf("%d%s", a[i], i == n - 1 ? "\n" : " ");
+	//quickSort(a,0, n);
+	quick_sort(a, n);
+	for (i = 0; i <= n; i++)
+		printf("%d%s", a[i], i == n  ? "\n" : " ");
 	return 0;
 }
 
