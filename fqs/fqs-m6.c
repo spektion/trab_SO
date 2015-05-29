@@ -3,6 +3,8 @@
 #include <pthread.h>
  
 #define NUM_THREADS 4 
+
+long int chunk;
  
 void swapM(long int* a, long int* b)
 {
@@ -42,11 +44,22 @@ void quickSortM(long int *vec, int left, int right)
     }
 }
 
-int run_m(char **fname){
+void *th_qs(void *vect)
+{
+	long int *vec = (long int *) vect;
+	
+	quickSortM(vec,0, chunk);
+
+	pthread_exit(NULL);
+}
+
+int run_m(char **fname)
+{
 
     int i,j=1;
-    long int num,size=0,qsize,cmlsize;
+    long int num,size=0,cmlsize;
     FILE *ptr_myfile;
+	pthread_t tid[NUM_THREADS];
 
     ptr_myfile=fopen(*fname,"rb");
     if (!ptr_myfile)
@@ -57,90 +70,61 @@ int run_m(char **fname){
     while(fread(&num,sizeof(long int),1,ptr_myfile))
 		size++;
     size--;
-	qsize=size/4;
-	cmlsize=qsize;
-    long int arr1[qsize],arr2[qsize],arr3[qsize],arr4[qsize];
+	chunk=size/4;
+	cmlsize=chunk;
+    long int arr1[chunk],arr2[chunk],arr3[chunk],arr4[chunk];
     fseek(ptr_myfile, sizeof(long int), SEEK_SET );
-    for(i=0;i<size;i++){
+    for(i=1;i<=size;i++){
 		switch(j){
 		case 1:
 			fread(&arr1[i],sizeof(long int),1,ptr_myfile);
         break;
 		case 2:
-			fread(&arr2[i-qsize],sizeof(long int),1,ptr_myfile);	
+			fread(&arr2[i-chunk],sizeof(long int),1,ptr_myfile);	
         break;
 		case 3:
-			fread(&arr3[i-(2*qsize)],sizeof(long int),1,ptr_myfile);
+			fread(&arr3[i-(2*chunk)],sizeof(long int),1,ptr_myfile);
         break;
 		case 4:
-			fread(&arr4[i-(3*qsize)],sizeof(long int),1,ptr_myfile);
+			fread(&arr4[i-(3*chunk)],sizeof(long int),1,ptr_myfile);
         break;
 		}		
 		if(i==cmlsize)
 		{
-			cmlsize += qsize;
+			cmlsize += chunk;
 			j++;
 		}
 	}
     fclose(ptr_myfile);
 
     printf("\n----------- sorted -----------\n");
-    quickSortM(arr1,0, qsize);
-    quickSortM(arr2,0, qsize);
-    quickSortM(arr3,0, qsize);
-    quickSortM(arr4,0, qsize);
-	
-    for(i=0;i<qsize;i++)
+//    quickSortM(arr1,0, chunk);
+//    quickSortM(arr2,0, chunk);
+//    quickSortM(arr3,0, chunk);
+//    quickSortM(arr4,0, chunk);
+	pthread_create(&tid[0], NULL, &th_qs, (void*)arr1);
+	pthread_create(&tid[1], NULL, &th_qs, (void*)arr2);
+	pthread_create(&tid[2], NULL, &th_qs, (void*)arr3);
+	pthread_create(&tid[3], NULL, &th_qs, (void*)arr4);
+	sleep(50);
+/**/	
+    for(i=1;i<=chunk;i++)
 	{
-        printf("%d - %lu\n",i,arr1[i]);
-        printf("%d - %lu\n",i,arr2[i]);
-        printf("%d - %lu\n",i,arr3[i]);
-        printf("%d - %lu\n",i,arr4[i]);
+//        printf("%d - %lu\n",i,arr1[i]);
+//        printf("%d - %lu\n",i,arr2[i]);
+//        printf("%d - %lu\n",i,arr3[i]);
+//        printf("%d - %lu\n",i,arr4[i]);
 
+        printf("%lu\n",arr1[i]);
+        printf("%lu\n",arr2[i]);
+        printf("%lu\n",arr3[i]);
+        printf("%lu\n",arr4[i]);
 	}
+/**/
     return 0;
 
 }
 
-void swap(long int* a, long int* b)
-{
-    long int aux;
-    aux = *a;
-    *a = *b;
-    *b = aux;
-}
- 
-int divide(long int *vec, int left, int right)
-{
-    int i, j;
- 
-    i = left;
-    for (j = left + 1; j <= right; ++j)
-    {
-        if (vec[j] < vec[left])
-        {
-            ++i;
-            swap(&vec[i], &vec[j]);
-        }
-    }
-    swap(&vec[left], &vec[i]);
-
-	return i;
-}
-
-
-void quickSort(long int *vec, int left, int right)
-{
-    int r;
- 
-    if (right > left)
-    {
-        r = divide(vec, left, right);
-        quickSort(vec, left, r - 1);
-        quickSort(vec, r + 1, right);
-    }
-}
- 
 int run_s(char **fname){
 
     int i;
@@ -163,9 +147,9 @@ int run_s(char **fname){
     fclose(ptr_myfile);
 
     printf("\n----------- sorted -----------\n");
-    quickSort(arr,0, size);
+    quickSortM(arr,0, size);
     for(i=0;i<size;i++)
-        printf("%d - %lu\n",i,arr[i]);
+        printf("%lu\n",arr[i]);
     return 0;
 }
 
