@@ -58,7 +58,7 @@ void *th_qs(void *vect)
 	pthread_exit(0);
 }
 
-int run_m(char **fname)
+int run_t(char **fname)
 {
 
     int i;
@@ -82,8 +82,6 @@ int run_m(char **fname)
 		fread(&arr[i],sizeof(long int),1,ptr_myfile);
     fclose(ptr_myfile);
 
-    printf("\n----------- sorted -----------\n");
-
 	pthread_mutex_init(&lock_x, NULL);
 	for ( i = 1; i < NUM_THREADS; i++)
 	{
@@ -98,14 +96,12 @@ int run_m(char **fname)
 	chunk_end = size;
 	pthread_create(&tid[NUM_THREADS], NULL, &th_qs, (void*)arr);
 	pthread_join(tid[NUM_THREADS], &status);
-    for(i=0;i<size;i++)
-        printf("%d - %lu\n",i,arr[i]);
 	return 0;
 }
 
-int run_s(char **fname){
+int run_p(char **fname){
 
-    int i;
+    int i,wpid,status;
     long int num,size=0;
     FILE *ptr_myfile;
 
@@ -125,14 +121,22 @@ int run_s(char **fname){
     fclose(ptr_myfile);
 
     printf("\n----------- sorted -----------\n");
-    quickSortM(arr,0, size);
-    for(i=0;i<size;i++)
-        printf("%d - %lu\n",i,arr[i]);
+	for ( i = 1; i < NUM_THREADS; i++)
+	{
+		chunk_init = chunk_end;
+		chunk_end = (size/NUM_THREADS)*i;
+		if ( i==2 || i== 4 || i==6)
+			if(fork() == 0)
+				wpid = getpid();
+		quickSortM(arr,chunk_init, chunk_end);
+		wait(&status);
+	}
+	quickSortM(arr,0, size);
     return 0;
 }
 
 void help(){
-	printf("\nUsage: fqs [OPTION]... [FILE]...\nSort with quicksort algoritm a file with random long ints, OPTION and FILE are mandatory, OPTION must be [-s/-m], a default run displays this help and exit.\n\t-m       run with multiprocess support\n\t-s      run without multiprocess support\n\t\t-h     display this help and exit\n\t\t-v  output version information and exit\n\n");
+	printf("\nUsage: fqs [OPTION]... [FILE]...\nSort with quicksort algoritm a file with random long ints, OPTION and FILE are mandatory, OPTION must be [-s/-m], a default run displays this help and exit.\n\t-t       run with thread support\n\t-p      run without multiprocess support\n\t\t-h     display this help and exit\n\t\t-v  output version information and exit\n\n");
 }
 
 void vers(){
@@ -159,11 +163,11 @@ int main (int argc, char *argv[]) {
         break;
         case 4:
 			NUM_THREADS=atoi(argv[3]);
-			opt = getopt(argc, argv, "s:m:");
-            if(opt == 's')
-                rtn=run_s(&argv[2]);
-            else if (opt == 'm')
-                rtn=run_m(&argv[2]);
+			opt = getopt(argc, argv, "t:p:");
+            if(opt == 'p')
+                rtn=run_p(&argv[2]);
+            else if (opt == 't')
+                rtn=run_t(&argv[2]);
             else
             {
                 help();
