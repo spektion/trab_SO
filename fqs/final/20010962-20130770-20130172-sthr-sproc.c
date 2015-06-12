@@ -60,6 +60,20 @@ void *th_qs(void *vect) //funcao das threads
 	pthread_exit(0);
 }
 
+int ps_qs(long int *vect) //funcao dos processos
+{
+
+	pid_t child_pid, wpid;
+	int status = 0;
+
+	if ((child_pid = fork()) == 0) {
+		quickSortM(vect,chunk_init, chunk_end);
+		exit(0);
+	}
+	while ((wpid = wait(&status)) > 0);
+
+}
+
 int run_t(char **fname) //funcao principal com suporte de threads
 {
 
@@ -128,7 +142,7 @@ int run_t(char **fname) //funcao principal com suporte de threads
 int run_p(char **fname) //funcao principal com suporte a multiprocessos
 {
 
-    int i,wpid,status;
+    int i,wpid;
     long int num,size=0;
     FILE *ptr_myfile;
 	char str[30];
@@ -157,11 +171,7 @@ int run_p(char **fname) //funcao principal com suporte a multiprocessos
 		chunk_init = chunk_end;
 		chunk_end = (size/NUM_THREADS)*i;
 		if ( i==2 || i== 4 || i==6)
-			wpid = fork();
-			if(wpid>0)
-				break;
-		quickSortM(arr,chunk_init, chunk_end);
-		wait(&status);
+			ps_qs(arr);
 	}
 	quickSortM(arr,0, size);												// evoca ultima ordenacao total
 
